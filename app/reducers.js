@@ -8,6 +8,7 @@ function newVisit() {
   return {
     entry: undefined,
     exit: undefined,
+    duration: null,
     id: lastVisit++
   };
 }
@@ -18,6 +19,8 @@ const INITIAL_STATE = {
   ],
   errors: {}
 };
+
+const ONE_DAY = 60 * 60 * 24 * 1000;
 
 
 function overlaps(v1, v2) {
@@ -30,7 +33,13 @@ function visits(visits, action) {
     case UPDATE_VISIT:
       return visits.map(visit => {
         if (visit.id === action.id) {
-          return Object.assign({}, visit, action.props);
+          let newVisit = Object.assign({}, visit, action.props);
+          if (newVisit.entry && newVisit.exit && newVisit.entry <= newVisit.exit) {
+            newVisit.duration = Math.floor((newVisit.exit - newVisit.entry) / ONE_DAY + 1);
+          } else {
+            newVisit.duration = null;
+          }
+          return newVisit;
         }
         return visit;
       });
@@ -57,7 +66,7 @@ function errors(errors, action, visits) {
   for (let i = 0; i < visits.length; ++i) {
     const v = visits[i];
 
-    if (!v.entry || !v.exit || v.entry >= v.exit) {
+    if (!v.entry || !v.exit || v.entry > v.exit) {
       invalid[v.id] = true;
     }
   }

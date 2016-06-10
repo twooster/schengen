@@ -3,20 +3,10 @@ import { connect } from 'react-redux';
 import { removeVisit, updateVisit } from '../actions';
 import VisitList from '../components/VisitList';
 
-function computeDurationFor({ entry, exit }) {
-  return 42;
+const mapStateToProps = (state) => {
+  return state;
 };
 
-const mapStateToProps = (state) => {
-  return {
-    visits: state.visits.map(visit => {
-      return Object.assign({}, visit, {
-        duration: computeDurationFor(visit)
-      });
-    }),
-    errors: state.errors
-  };
-};
 
 const mapDispatchToProps = (dispatch) => {
   return {
