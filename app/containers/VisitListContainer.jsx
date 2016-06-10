@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 
 import { removeVisit, updateVisit } from '../actions';
-import VisitList from './VisitList';
+import VisitList from '../components/VisitList';
 
 function computeDurationFor({ entry, exit }) {
   return 42;
