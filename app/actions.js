@@ -1,8 +1,6 @@
-export const CREATE_VISIT = 'ADD_VISIT';
-export const REMOVE_VISIT = 'REMOVE_VISIT';
+export const CREATE_VISIT = 'CREATE_VISIT';
 export const UPDATE_VISIT = 'UPDATE_VISIT';
-export const UPDATE_NEW_VISIT_ENTRY = 'UPDATE_NEW_VISIT_ENTRY';
-export const UPDATE_NEW_VISIT_EXIT  = 'UPDATE_NEW_VISIT_EXIT';
+export const REMOVE_VISIT = 'REMOVE_VISIT';
 
 export function createVisit(props) {
   return {
@@ -11,23 +9,17 @@ export function createVisit(props) {
   };
 };
 
+export function updateVisit(id, props) {
+  return {
+    type: UPDATE_VISIT,
+    props: { ...props, id },
+    id
+  };
+};
+
 export function removeVisit(id) {
   return {
     type: REMOVE_VISIT,
     id
   };
-};
-
-export function updateNewVisitEntry(entry) {
-  return {
-    type: UPDATE_NEW_VISIT_ENTRY,
-    entry
-  }
-};
-
-export function updateNewVisitExit(exit) {
-  return {
-    type: UPDATE_NEW_VISIT_EXIT,
-    exit
-  }
 };

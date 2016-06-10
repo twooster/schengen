@@ -1,85 +1,91 @@
 import { CREATE_VISIT,
          REMOVE_VISIT,
-         UPDATE_NEW_VISIT_ENTRY,
-         UPDATE_NEW_VISIT_EXIT } from './actions';
-
-const INITIAL_STATE = {
-  visits: [],
-  addVisit: {
-    entry: undefined,
-    exit: undefined,
-    error: null,
-  }
-};
+         UPDATE_VISIT } from './actions';
 
 let lastVisit = 0;
 
-function newVisit(props) {
+function newVisit() {
   return {
-    ...props,
+    entry: undefined,
+    exit: undefined,
     id: lastVisit++
   };
 }
+
+const INITIAL_STATE = {
+  visits: [
+    newVisit()
+  ],
+  errors: {}
+};
+
 
 function overlaps(v1, v2) {
   return (v1.entry <= v2.entry && v1.exit >= v2.entry) ||
          (v2.entry <= v1.entry && v2.exit >= v1.entry);
 }
 
-function validateAddVisit(props, visits) {
-  const { entry, exit } = props;
-  props.error = null;
-
-  if (entry && exit) {
-    if (entry >= exit) {
-      props.error = 'Entry must come before exit';
-    } else {
-      for (let i = 0; i < visits.length; ++i) {
-        if (overlaps(visits[i], props)) {
-          props.error = 'Overlaps an existing entry';
-          break;
-        }
-      }
-    }
-  }
-
-  return props;
-}
-
-function addVisit(addVisit, action, visits) {
-  switch(action.type) {
-    case UPDATE_NEW_VISIT_ENTRY:
-      return validateAddVisit({
-        ...addVisit,
-        entry: action.entry
-      }, visits);
-    case UPDATE_NEW_VISIT_EXIT:
-      return validateAddVisit({
-        ...addVisit,
-        exit: action.exit
-      }, visits);
-    case CREATE_VISIT:
-      return INITIAL_STATE.addVisit;
-    default:
-      return addVisit;
-  }
-}
-
 function visits(visits, action) {
   switch(action.type) {
-    case CREATE_VISIT:
-      return visits.concat(newVisit(action.props));
-    case REMOVE_VISIT:
-      return visits.filter(visit => {
-        return visit.id != action.id;
+    case UPDATE_VISIT:
+      return visits.map(visit => {
+        if (visit.id === action.id) {
+          return Object.assign({}, visit, action.props);
+        }
+        return visit;
       });
+    case CREATE_VISIT:
+      return visits.concat(newVisit());
+    case REMOVE_VISIT: {
+        let newVisits = visits.filter(visit => {
+          return visit.id !== action.id;
+        });
+        if (!newVisits.length) {
+          return [newVisit()];
+        }
+        return newVisits;
+    }
     default:
       return visits;
   }
 }
 
-export default function schengenApp(state = INITIAL_STATE, action) {
-  const v = visits(state.visits, action);
-  const a = addVisit(state.addVisit, action, v);
-  return { visits: v, addVisit: a };
+function errors(errors, action, visits) {
+  let invalid = {};
+  let overlap = {};
+
+  for (let i = 0; i < visits.length; ++i) {
+    const v = visits[i];
+
+    if (!v.entry || !v.exit || v.entry >= v.exit) {
+      invalid[v.id] = true;
+    }
+  }
+
+  for (let i = 0; i < visits.length; ++i) {
+    const v1 = visits[i];
+
+    if (!invalid[v1.id]) {
+      for (let j = i+1; j < visits.length; ++j) {
+        const v2 = visits[j];
+
+        if (!invalid[v2.id] && overlaps(v1, v2)) {
+          overlap[v1.id] = true;
+          overlap[v2.id] = true;
+        }
+      }
+    }
+  }
+
+  return Object.assign(invalid, overlap);
 }
+
+function schengenApp(state = INITIAL_STATE, action) {
+  const newVisits = visits(state.visits, action);
+  return {
+    visits: newVisits,
+    errors: errors(state.errors, action, newVisits)
+  };
+}
+
+export default schengenApp;

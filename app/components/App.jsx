@@ -1,12 +1,12 @@
 import React from 'react';
 import VisitListContainer from '../containers/VisitListContainer';
-import AddVisitContainer from '../containers/AddVisitContainer';
+import AddVisit from '../components/AddVisit';
 
 const App = () => {
   return (
     <div>
       <VisitListContainer />
-      <AddVisitContainer />
+      <AddVisit />
     </div>
   );
 };
